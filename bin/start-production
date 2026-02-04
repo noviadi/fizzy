@@ -5,6 +5,8 @@ export RAILS_ENV=production
 export SECRET_KEY_BASE="YOUR_KEY_HERE"
 export DISABLE_SSL=true
 export BASE_URL=http://macetude.tail32332c.ts.net:3006
+export VAPID_PRIVATE_KEY="YOUR_GENERATED_PRIVATE_KEY"
+export VAPID_PUBLIC_KEY="YOUR_GENERATED_PUBLIC_KEY"
 export WEB_CONCURRENCY=0
 export RAILS_MAX_THREADS=5
 exec /Users/noviadihapsoro/.local/share/mise/installs/ruby/3.4.7/bin/bundle exec rails server -b 0.0.0.0 -p 3006
