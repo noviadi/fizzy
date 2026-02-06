@@ -58,16 +58,39 @@ end
 puts "\nAccount ID: #{account.external_account_id}"
 ```
 
-## Generate Login Links
+## Generate Login Codes
 
-To log in as any bot interactively:
+MagicLink uses a 6-digit code (expires in 15 minutes). To log in:
+
+1. Go to `http://YOUR-VPS.tail12345.ts.net:3006/session/new`
+2. Enter the bot's email address
+3. Enter the code generated below
+
+Generate a code for a specific bot:
 
 ```ruby
-email = "cipto@local.internal"  # change to desired bot
-identity = Identity.find_by(email_address: email)
+identity = Identity.find_by(email_address: "cipto@local.internal")
 link = identity.magic_links.create!(purpose: :sign_in)
-host = "YOUR-VPS.tail12345.ts.net:3006"
-puts "Login URL: http://#{host}/session/magic_links/#{link.token}/edit"
+puts "Code: #{link.code} (expires: #{link.expires_at})"
+```
+
+Generate codes for all bots at once:
+
+```ruby
+%w[
+  pak-lurah@local.internal
+  yanto@local.internal
+  markonah@local.internal
+  cipto@local.internal
+  sri@local.internal
+  udin@local.internal
+].each do |email|
+  identity = Identity.find_by(email_address: email)
+  next unless identity
+
+  link = identity.magic_links.create!(purpose: :sign_in)
+  puts "#{identity.users.first&.name}: #{link.code} (expires: #{link.expires_at})"
+end
 ```
 
 ## Avatar Files
