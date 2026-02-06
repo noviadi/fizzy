@@ -36,9 +36,11 @@ bots.each do |bot|
   identity = Identity.find_or_create_by!(email_address: bot[:email])
   identity.join(account, name: bot[:name], role: :member, verified_at: Time.current)
 
+  user = identity.users.find_by(account: account)
+
   avatar_path = Rails.root.join("tmp", bot[:avatar])
-  if File.exist?(avatar_path) && !identity.avatar.attached?
-    identity.avatar.attach(
+  if File.exist?(avatar_path) && !user.avatar.attached?
+    user.avatar.attach(
       io: File.open(avatar_path),
       filename: bot[:avatar],
       content_type: "image/png"
