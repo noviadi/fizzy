@@ -32,11 +32,11 @@ bots = [
 ]
 
 bots.each do |bot|
-  identity = Identity.create!(email_address: bot[:email])
+  identity = Identity.find_or_create_by!(email_address: bot[:email])
   identity.join(account, name: bot[:name], role: :member, verified_at: Time.current)
 
   avatar_path = Rails.root.join("tmp", bot[:avatar])
-  if File.exist?(avatar_path)
+  if File.exist?(avatar_path) && !identity.avatar.attached?
     identity.avatar.attach(
       io: File.open(avatar_path),
       filename: bot[:avatar],
@@ -44,7 +44,7 @@ bots.each do |bot|
     )
   end
 
-  token = identity.access_tokens.create!(
+  token = identity.access_tokens.first || identity.access_tokens.create!(
     description: bot[:desc],
     permission: :write
   )
