@@ -21,6 +21,7 @@ RAILS_ENV=production bin/rails console
 
 ```ruby
 account = Account.first
+Current.account = account
 
 bots = [
   { name: "Pak Lurah",  email: "pak-lurah@local.internal",  avatar: "pak-lurah-avatar.png",  desc: "Orchestrator bot" },
