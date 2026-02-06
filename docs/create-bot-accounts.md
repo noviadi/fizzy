@@ -33,14 +33,7 @@ bots = [
 
 bots.each do |bot|
   identity = Identity.create!(email_address: bot[:email])
-
-  User.create!(
-    name: bot[:name],
-    identity: identity,
-    account: account,
-    role: :member,
-    verified_at: Time.current
-  )
+  identity.join(account, name: bot[:name], role: :member, verified_at: Time.current)
 
   avatar_path = Rails.root.join("tmp", bot[:avatar])
   if File.exist?(avatar_path)
