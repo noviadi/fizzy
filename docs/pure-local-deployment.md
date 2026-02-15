@@ -98,37 +98,28 @@ chmod 600 config/master.key
 cat config/master.key
 ```
 
-### 4. Configure for Tailscale Access
+### 4. Create Startup Script
 
-Add Tailscale hosts to the production configuration:
-
-```bash
-# Append to config/environments/production.rb (before final 'end')
-cat >> config/environments/production.rb <<'RUBY'
-
-  # Allow Tailscale hostnames
-  config.hosts << /.*\.ts\.net/
-  config.hosts << "localhost"
-RUBY
-```
-
-### 5. Set Environment Variables
-
-Create a production environment file:
+Fizzy doesn't use dotenv, so environment variables are set in the startup script:
 
 ```bash
-cat > .env.production.local <<EOF
-RAILS_ENV=production
-DISABLE_SSL=true
-BASE_URL=http://YOUR-VPS.tail12345.ts.net:3006
-ACTIVE_STORAGE_SERVICE=local
-FIZZY_DB_ADAPTER=sqlite
+cat > bin/start-production <<'EOF'
+#!/bin/bash
+export PATH="$HOME/.local/share/mise/installs/ruby/3.4.7/bin:$PATH"
+cd $HOME/fizzy
+export RAILS_ENV=production
+export SECRET_KEY_BASE="$(openssl rand -hex 64)"
+export BASE_URL=http://YOUR-VPS.tail12345.ts.net:3006
+export DISABLE_SSL=true
+export WEB_CONCURRENCY=0
+exec bundle exec rails server -b 127.0.0.1 -p 3006
 EOF
+chmod +x bin/start-production
 ```
 
-Replace `YOUR-VPS.tail12345.ts.net` with your actual Tailscale hostname.
+Replace `YOUR-VPS.tail12345.ts.net` with your actual Tailscale hostname. Generate a stable `SECRET_KEY_BASE` once and save it.
 
-### 6. Prepare Database
+### 5. Prepare Database
 
 ```bash
 RAILS_ENV=production bin/rails db:prepare
@@ -235,7 +226,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 
 ```bash
 cd ~/fizzy
-RAILS_ENV=production bin/rails server -b 0.0.0.0 -p 3006
+bin/start-production
 ```
 
 ### Systemd Service (Recommended)
@@ -252,11 +243,7 @@ After=network.target
 Type=simple
 User=$USER
 WorkingDirectory=$HOME/fizzy
-Environment=RAILS_ENV=production
-Environment=DISABLE_SSL=true
-Environment=BASE_URL=http://YOUR-VPS.tail12345.ts.net:3006
-Environment=ACTIVE_STORAGE_SERVICE=local
-ExecStart=/bin/bash -lc 'bin/rails server -b 0.0.0.0 -p 3006'
+ExecStart=$HOME/fizzy/bin/start-production
 Restart=always
 RestartSec=5
 
